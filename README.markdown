@@ -1,8 +1,8 @@
-# Home Assistant Backup
+# Home Assistant Backup to B2
 
 * Home Assistant creates a backup every night, which is stored in the docker volume
 * A systemd timer creates a daily backup of the that file
-* An S3 bucket is set up to keep the backup files. It is set without versioning, so that we keep only the last generation for a day of the week or week of the year. Yearly backups will be kept "forever".
+* An S3 bucket at B2 is set up to keep the backup files. It is set without versioning, so that we keep only the last generation for a day of the week or week of the year. Yearly backups will be kept "forever".
 * There are seven daily backup files uploaed to an S3 bucket:
   - home-assistant-backup.Monday.tar.gz
   - home-assistant-backup.Tuesday.tar.gz
