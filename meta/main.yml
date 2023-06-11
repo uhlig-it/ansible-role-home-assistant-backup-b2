@@ -1,0 +1,14 @@
+galaxy_info:
+  role_name: home-assistant-backup-b2
+  author: Steffen Uhlig
+  description: Home Assistant Backup to B2
+  license: MIT
+  min_ansible_version: 2.6
+  platforms:
+    - name: Debian
+      versions:
+        - stretch
+  galaxy_tags:
+    - home-assistant
+    - backup
+    - b2
