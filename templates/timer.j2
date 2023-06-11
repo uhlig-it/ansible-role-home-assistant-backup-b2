@@ -1,0 +1,14 @@
+[Unit]
+Description=Backup timer for the {{ ansible_role_name }}
+After=network-online.target
+
+[Timer]
+{% for entry in timers %}
+{{ entry }}
+{% endfor %}
+
+# run some time within the first four hours of the day
+RandomizedDelaySec=14400
+
+[Install]
+WantedBy=timers.target

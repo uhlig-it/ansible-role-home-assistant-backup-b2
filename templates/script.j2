@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+select-latest-backup() {
+  find /opt/homeassistant/backups/ -type f -name '*.tar' -printf '%T+ %p\n' | sort -r | head -n 1 | cut -d' ' -f2
+}
+
+# B2_APPLICATION_KEY_ID and B2_APPLICATION_KEY are set in service unit
+b2 authorize-account
+
+bucket="{{ home_assistant.backup.bucket }}"
+latestBackupFile="$(select-latest-backup)"
+remoteFileName="home-assistant-backup.daily-$(date +%A).tar"
+echo "Uploading backup '$latestBackupFile' as $remoteFileName"
+
+b2 upload-file "$bucket" "$latestBackupFile" "$remoteFileName"
+rm "$latestBackupFile"
+
+latestFileId="$(b2 ls "$bucket" --json \
+| jq \
+    --arg remoteFileName "$remoteFileName" \
+    --raw-output \
+    '.[] | select(.fileName == $remoteFileName) | .fileId'
+)"
+
+echo "Latest fileId is $latestFileId"
+
+if [ "$(date +%A)" = Sunday ]; then
+  echo "It's Sunday, so we keep today's backup as the one for week $(date +%V)."
+  b2 copy-file-by-id "$latestFileId" "$bucket" "home-assistant-backup.week-$(date +%V).tar"
+fi
+
+if [ "$(date +%m-%d)" = 12-31 ]; then
+  echo "It's the last day of the year, so we keep today's backup as the one for $(date +%Y)."
+  b2 copy-file-by-id "$latestFileId" "$bucket" "home-assistant-backup.$(date +%Y).tar"
+fi
+
+echo Done

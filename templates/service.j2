@@ -1,0 +1,12 @@
+[Unit]
+Description=Backup of Home Assistant
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=B2_APPLICATION_KEY_ID="{{ home_assistant.backup.keyId }}"
+Environment=B2_APPLICATION_KEY="{{ home_assistant.backup.applicationKey }}"
+ExecStart=/usr/local/bin/{{ ansible_role_name }}
+
+[Install]
+WantedBy=default.target

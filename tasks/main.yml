@@ -1,0 +1,48 @@
+- name: Dependencies are installed
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - jq
+      - python3-pip
+  tags: [ apt ]
+
+- name: b2 tool is present
+  ansible.builtin.pip:
+    name: b2
+
+- name: "{{ ansible_role_name }} tool is present"
+  template:
+    src: script.j2
+    dest: /usr/local/bin/{{ ansible_role_name }}
+    mode: "0755"
+
+- name: Backup service is present
+  template:
+    src: service.j2
+    dest: "/etc/systemd/system/{{ ansible_role_name }}.service"
+    mode: "0664"
+  register: service_rendered
+  tags: [ systemd, timer ]
+
+- name: Backup service is enabled
+  systemd:
+    name: "{{ ansible_role_name }}.service"
+    enabled: true
+    daemon_reload: true
+  tags: [ systemd, service ]
+
+- name: Backup timer is present
+  template:
+    src: timer.j2
+    dest: "/etc/systemd/system/{{ ansible_role_name }}.timer"
+    mode: "0664"
+  tags: [ systemd, timer ]
+
+- name: Backup timer is enabled and started
+  systemd:
+    name: "{{ ansible_role_name }}.timer"
+    enabled: true
+    state: started
+    daemon_reload: true
+  tags: [ systemd, timer ]
